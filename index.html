@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Code Blue Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header with master timer -->
+    <header id="header">
+      <h1>Code Blue Tracker</h1>
+      <div id="master-timer-section">
+        <div id="master-timer" class="timer-display">00:00</div>
+        <div id="timer-controls">
+          <button id="btn-start-code" class="btn btn-danger btn-large">Start Code Blue</button>
+          <button id="btn-end-code" class="btn btn-dark btn-large hidden">End Code</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Alert banners -->
+    <div id="alerts-container">
+      <div id="alert-compression" class="alert alert-compression hidden" onclick="dismissCompressionAlert()">
+        ⚠ SWITCH COMPRESSOR — Tap to dismiss
+      </div>
+      <div id="alert-epi" class="alert alert-epi hidden" onclick="dismissEpiAlert()">
+        ⚠ EPINEPHRINE DUE — Tap to dismiss
+      </div>
+    </div>
+
+    <!-- Sub-timers -->
+    <div id="sub-timers" class="hidden">
+      <div class="sub-timer-row">
+        <div class="sub-timer-box">
+          <div class="sub-timer-label">Compression Switch</div>
+          <div id="compression-timer" class="sub-timer-value">02:00</div>
+          <button class="btn btn-sm btn-outline" onclick="resetCompressionTimer()">Reset</button>
+        </div>
+        <div class="sub-timer-box">
+          <div class="sub-timer-label">Epinephrine</div>
+          <div id="epi-timer" class="sub-timer-value">04:00</div>
+          <button class="btn btn-sm btn-outline" onclick="resetEpiTimer()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <nav id="tab-nav" class="hidden">
+      <button class="tab-btn active" data-tab="events">Events</button>
+      <button class="tab-btn" data-tab="interventions">Interventions</button>
+      <button class="tab-btn" data-tab="meds">Meds</button>
+      <button class="tab-btn" data-tab="outcome">Outcome</button>
+      <button class="tab-btn" data-tab="log">Log</button>
+    </nav>
+
+    <!-- Tab content panels -->
+    <main id="tab-content" class="hidden">
+
+      <!-- EVENTS TAB -->
+      <section id="tab-events" class="tab-panel active">
+        <h2>Rhythm &amp; Pulse Checks</h2>
+
+        <div class="form-group">
+          <label>Initial Rhythm</label>
+          <div class="rhythm-buttons">
+            <button class="btn btn-option" onclick="setInitialRhythm('VFib')">VFib</button>
+            <button class="btn btn-option" onclick="setInitialRhythm('VTach')">VTach</button>
+            <button class="btn btn-option" onclick="setInitialRhythm('PEA')">PEA</button>
+            <button class="btn btn-option" onclick="setInitialRhythm('Asystole')">Asystole</button>
+            <button class="btn btn-option" onclick="setInitialRhythm('Other')">Other</button>
+          </div>
+          <div id="initial-rhythm-display" class="status-display hidden"></div>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+          <label>Pulse Check</label>
+          <div class="rhythm-buttons">
+            <button class="btn btn-option" onclick="logPulseCheck('VFib')">VFib</button>
+            <button class="btn btn-option" onclick="logPulseCheck('VTach')">VTach</button>
+            <button class="btn btn-option" onclick="logPulseCheck('PEA')">PEA</button>
+            <button class="btn btn-option" onclick="logPulseCheck('Asystole')">Asystole</button>
+            <button class="btn btn-option" onclick="logPulseCheck('Sinus')">Sinus</button>
+            <button class="btn btn-option" onclick="logPulseCheck('Other')">Other</button>
+          </div>
+          <div class="inline-row">
+            <label class="toggle-label">
+              <input type="checkbox" id="pulse-present"> Pulse present
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERVENTIONS TAB -->
+      <section id="tab-interventions" class="tab-panel">
+        <h2>Interventions</h2>
+
+        <div class="btn-grid">
+          <button class="btn btn-action" onclick="logIntervention('CPR Started')">CPR Started</button>
+          <button class="btn btn-action" onclick="logIntervention('CPR Stopped')">CPR Stopped</button>
+          <button class="btn btn-action" onclick="logIntervention('Defibrillation')">Defibrillation</button>
+          <button class="btn btn-action" onclick="logIntervention('Intubation')">Intubation</button>
+          <button class="btn btn-action" onclick="logIntervention('Supraglottic Airway')">Supraglottic Airway</button>
+          <button class="btn btn-action" onclick="logIntervention('Bag-Mask Ventilation')">Bag-Mask Ventilation</button>
+          <button class="btn btn-action" onclick="logIntervention('Needle Decompression')">Needle Decompression</button>
+          <button class="btn btn-action" onclick="logIntervention('External Pacing')">External Pacing</button>
+          <button class="btn btn-action" onclick="logIntervention('IV Access')">IV Access</button>
+          <button class="btn btn-action" onclick="logIntervention('IO Access')">IO Access</button>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label>Other Intervention</label>
+          <div class="inline-row">
+            <input type="text" id="other-intervention" placeholder="Describe...">
+            <button class="btn btn-action" onclick="logCustomIntervention()">Log</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 0.75rem;">
+          <label>Defibrillation Energy (J)</label>
+          <div class="inline-row">
+            <input type="number" id="defib-energy" placeholder="e.g. 200" inputmode="numeric">
+            <button class="btn btn-action" onclick="logDefib()">Log Shock</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- MEDICATIONS TAB -->
+      <section id="tab-meds" class="tab-panel">
+        <h2>Medications</h2>
+
+        <div class="quick-meds">
+          <h3>Quick Add</h3>
+          <div class="btn-grid">
+            <button class="btn btn-med" onclick="logQuickMed('Epinephrine', '1 mg', 'IV/IO')">Epi 1mg IV/IO</button>
+            <button class="btn btn-med" onclick="logQuickMed('Amiodarone', '300 mg', 'IV/IO')">Amio 300mg</button>
+            <button class="btn btn-med" onclick="logQuickMed('Amiodarone', '150 mg', 'IV/IO')">Amio 150mg</button>
+            <button class="btn btn-med" onclick="logQuickMed('Lidocaine', '1-1.5 mg/kg', 'IV/IO')">Lidocaine</button>
+            <button class="btn btn-med" onclick="logQuickMed('Atropine', '1 mg', 'IV/IO')">Atropine 1mg</button>
+            <button class="btn btn-med" onclick="logQuickMed('Sodium Bicarbonate', '1 mEq/kg', 'IV/IO')">NaHCO3</button>
+            <button class="btn btn-med" onclick="logQuickMed('Calcium Chloride', '1 g', 'IV/IO')">CaCl2 1g</button>
+            <button class="btn btn-med" onclick="logQuickMed('Magnesium Sulfate', '2 g', 'IV/IO')">MgSO4 2g</button>
+            <button class="btn btn-med" onclick="logQuickMed('Vasopressin', '40 units', 'IV/IO')">Vasopressin</button>
+            <button class="btn btn-med" onclick="logQuickMed('Normal Saline Bolus', '1 L', 'IV/IO')">NS Bolus 1L</button>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+          <h3>Custom Medication</h3>
+          <input type="text" id="med-name" placeholder="Drug name">
+          <input type="text" id="med-dose" placeholder="Dose (e.g. 1 mg)">
+          <select id="med-route">
+            <option value="IV">IV</option>
+            <option value="IO">IO</option>
+            <option value="IM">IM</option>
+            <option value="ET">ET (Endotracheal)</option>
+            <option value="SQ">SubQ</option>
+            <option value="PO">PO</option>
+            <option value="PR">PR</option>
+            <option value="Nebulized">Nebulized</option>
+            <option value="Other">Other</option>
+          </select>
+          <button class="btn btn-med" onclick="logCustomMed()" style="margin-top: 0.5rem;">Log Medication</button>
+        </div>
+      </section>
+
+      <!-- OUTCOME TAB -->
+      <section id="tab-outcome" class="tab-panel">
+        <h2>Outcome</h2>
+
+        <div class="btn-grid outcome-grid">
+          <button class="btn btn-rosc btn-large" onclick="logOutcome('ROSC')">ROSC Achieved</button>
+          <button class="btn btn-terminate btn-large" onclick="logOutcome('Terminated')">Code Terminated</button>
+        </div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label>Notes</label>
+          <textarea id="outcome-notes" rows="3" placeholder="Additional outcome details..."></textarea>
+          <button class="btn btn-action" onclick="logOutcomeNotes()" style="margin-top: 0.5rem;">Save Notes</button>
+        </div>
+      </section>
+
+      <!-- LOG TAB -->
+      <section id="tab-log" class="tab-panel">
+        <h2>Event Log</h2>
+        <div id="log-actions">
+          <button class="btn btn-sm btn-outline" onclick="copyLog()">Copy to Clipboard</button>
+          <button class="btn btn-sm btn-outline" onclick="downloadLog()">Download</button>
+        </div>
+        <div id="event-log"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
