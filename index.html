@@ -48,12 +48,29 @@
       </div>
     </div>
 
+    <!-- Outcome overlay (shown when End Code is pressed) -->
+    <div id="outcome-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <h2>Code Ended</h2>
+        <p id="outcome-time-display" class="outcome-time"></p>
+        <p class="outcome-prompt">Select outcome:</p>
+        <div class="btn-grid outcome-grid">
+          <button class="btn btn-rosc btn-large" onclick="selectOutcome('ROSC')">ROSC Achieved</button>
+          <button class="btn btn-terminate btn-large" onclick="selectOutcome('Terminated')">Code Terminated</button>
+        </div>
+        <div class="form-group" style="margin-top: 1rem;">
+          <label>Notes (optional)</label>
+          <textarea id="outcome-notes" rows="3" placeholder="Additional outcome details..."></textarea>
+        </div>
+        <button class="btn btn-action btn-large" onclick="confirmOutcome()" id="btn-confirm-outcome" style="width:100%; margin-top:0.5rem;" disabled>Confirm &amp; Close</button>
+      </div>
+    </div>
+
     <!-- Tab navigation -->
     <nav id="tab-nav" class="hidden">
       <button class="tab-btn active" data-tab="events">Events</button>
       <button class="tab-btn" data-tab="interventions">Interventions</button>
       <button class="tab-btn" data-tab="meds">Meds</button>
-      <button class="tab-btn" data-tab="outcome">Outcome</button>
       <button class="tab-btn" data-tab="log">Log</button>
     </nav>
 
@@ -168,22 +185,6 @@
             <option value="Other">Other</option>
           </select>
           <button class="btn btn-med" onclick="logCustomMed()" style="margin-top: 0.5rem;">Log Medication</button>
-        </div>
-      </section>
-
-      <!-- OUTCOME TAB -->
-      <section id="tab-outcome" class="tab-panel">
-        <h2>Outcome</h2>
-
-        <div class="btn-grid outcome-grid">
-          <button class="btn btn-rosc btn-large" onclick="logOutcome('ROSC')">ROSC Achieved</button>
-          <button class="btn btn-terminate btn-large" onclick="logOutcome('Terminated')">Code Terminated</button>
-        </div>
-
-        <div class="form-group" style="margin-top: 1rem;">
-          <label>Notes</label>
-          <textarea id="outcome-notes" rows="3" placeholder="Additional outcome details..."></textarea>
-          <button class="btn btn-action" onclick="logOutcomeNotes()" style="margin-top: 0.5rem;">Save Notes</button>
         </div>
       </section>
 

@@ -453,6 +453,65 @@ input:focus, textarea:focus, select:focus {
 .cat-outcome { background: var(--success); color: #fff; }
 .cat-alert { background: var(--danger); color: #fff; }
 
+/* === Outcome Overlay === */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.overlay-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.overlay-content h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.outcome-time {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--info);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 0.75rem;
+}
+
+.outcome-prompt {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.overlay-content .outcome-grid {
+  justify-content: center;
+}
+
+.overlay-content .btn-rosc.selected-outcome {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+.overlay-content .btn-terminate.selected-outcome {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  background: var(--danger-dark);
+}
+
 /* === Utilities === */
 .hidden {
   display: none !important;

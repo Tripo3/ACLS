@@ -159,18 +159,98 @@
     masterIntervalId = setInterval(tick, 1000);
   });
 
+  // ---- End Code → Outcome Overlay ----
+  let endCodeWallTime = null;
+  let endCodeElapsed = null;
+  let selectedOutcomeType = null;
+
+  const $outcomeOverlay    = document.getElementById("outcome-overlay");
+  const $outcomeTimeDisp   = document.getElementById("outcome-time-display");
+  const $btnConfirmOutcome = document.getElementById("btn-confirm-outcome");
+
   $btnEndCode.addEventListener("click", function () {
     if (!codeRunning) return;
-    if (!confirm("End this code? Timer will stop.")) return;
 
+    // Stop the timer immediately and capture the time
     codeRunning = false;
     clearInterval(masterIntervalId);
-    addLogEntry("Event", "Code ended at " + wallTimeString() + " — Total duration: " + elapsedString());
+    endCodeWallTime = wallTimeString();
+    endCodeElapsed = elapsedString();
 
-    $btnEndCode.classList.add("hidden");
     dismissCompressionAlert();
     dismissEpiAlert();
+
+    // Show outcome overlay
+    selectedOutcomeType = null;
+    $btnConfirmOutcome.disabled = true;
+    $outcomeOverlay.querySelectorAll(".btn-rosc, .btn-terminate").forEach(function (b) {
+      b.classList.remove("selected-outcome");
+    });
+    document.getElementById("outcome-notes").value = "";
+    $outcomeTimeDisp.textContent = "Stopped at " + endCodeWallTime + " — Duration: " + endCodeElapsed;
+    $outcomeOverlay.classList.remove("hidden");
   });
+
+  window.selectOutcome = function (type) {
+    selectedOutcomeType = type;
+    $btnConfirmOutcome.disabled = false;
+    $outcomeOverlay.querySelectorAll(".btn-rosc, .btn-terminate").forEach(function (b) {
+      b.classList.remove("selected-outcome");
+    });
+    if (type === "ROSC") {
+      $outcomeOverlay.querySelector(".btn-rosc").classList.add("selected-outcome");
+    } else {
+      $outcomeOverlay.querySelector(".btn-terminate").classList.add("selected-outcome");
+    }
+  };
+
+  window.confirmOutcome = function () {
+    if (!selectedOutcomeType) return;
+
+    // Log with the captured end-code timestamp
+    var outcomeText;
+    if (selectedOutcomeType === "ROSC") {
+      outcomeText = "ROSC achieved at " + endCodeWallTime;
+    } else {
+      outcomeText = "Code terminated at " + endCodeWallTime;
+    }
+
+    // Use the captured time for the log entry
+    var entry = {
+      wallTime: endCodeWallTime,
+      elapsed: endCodeElapsed,
+      category: "Outcome",
+      text: outcomeText
+    };
+    eventLog.push(entry);
+
+    // Also log the code-ended event at that same timestamp
+    eventLog.push({
+      wallTime: endCodeWallTime,
+      elapsed: endCodeElapsed,
+      category: "Event",
+      text: "Code ended at " + endCodeWallTime + " — Total duration: " + endCodeElapsed
+    });
+
+    // Log notes if present
+    var notes = document.getElementById("outcome-notes").value.trim();
+    if (notes) {
+      eventLog.push({
+        wallTime: endCodeWallTime,
+        elapsed: endCodeElapsed,
+        category: "Outcome",
+        text: "Notes: " + notes
+      });
+    }
+
+    renderLog();
+
+    // Hide overlay, hide End Code button
+    $outcomeOverlay.classList.add("hidden");
+    $btnEndCode.classList.add("hidden");
+
+    showToast(selectedOutcomeType + " logged — code ended");
+  };
 
   // ---- Alert Dismiss ----
   window.dismissCompressionAlert = function () {
@@ -310,23 +390,6 @@
     }
   };
 
-  // ---- Outcome ----
-  window.logOutcome = function (type) {
-    if (type === "ROSC") {
-      addLogEntry("Outcome", "ROSC achieved at " + wallTimeString());
-    } else {
-      addLogEntry("Outcome", "Code terminated at " + wallTimeString());
-    }
-    showToast(type + " logged");
-  };
-
-  window.logOutcomeNotes = function () {
-    const notes = document.getElementById("outcome-notes").value.trim();
-    if (!notes) return;
-    addLogEntry("Outcome", "Notes: " + notes);
-    document.getElementById("outcome-notes").value = "";
-    showToast("Notes saved");
-  };
 
   // ---- Copy / Download Log ----
   window.copyLog = function () {
