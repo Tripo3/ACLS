@@ -300,6 +300,19 @@ hr {
   background: #6b46c1;
 }
 
+.btn-undo {
+  background: var(--warning);
+  color: #000;
+}
+
+.btn-undo:disabled {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
 .btn-rosc {
   background: var(--success);
   color: #fff;

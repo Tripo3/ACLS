@@ -17,6 +17,7 @@
   let epiAlertActive = false;
 
   const eventLog = [];            // { wallTime, elapsed, category, text }
+  const undoStack = [];           // stores removed entries for potential re-add (not used, just pops)
 
   // ---- DOM References ----
   const $masterTimer        = document.getElementById("master-timer");
@@ -64,6 +65,54 @@
     setTimeout(() => toast.classList.remove("show"), 1800);
   }
 
+  // ---- Audio Alerts (Web Audio API — no external files needed) ----
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  function playAlertSound(type) {
+    try {
+      var ctx = getAudioCtx();
+      // Resume context if suspended (mobile browsers require user gesture)
+      if (ctx.state === "suspended") ctx.resume();
+
+      if (type === "compression") {
+        // 3 rapid beeps — high pitch
+        [0, 0.18, 0.36].forEach(function (delay) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "square";
+          osc.frequency.value = 880;
+          gain.gain.value = 0.3;
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.12);
+        });
+      } else if (type === "epi") {
+        // 2 longer tones — lower pitch
+        [0, 0.4].forEach(function (delay) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.value = 600;
+          gain.gain.value = 0.35;
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.3);
+        });
+      }
+    } catch (e) {
+      // Audio not available — alerts still flash visually
+    }
+  }
+
   // ---- Event Log ----
   function addLogEntry(category, text) {
     const entry = {
@@ -96,7 +145,22 @@
         <span style="color: var(--text-muted); font-size:0.7rem; margin-left:0.3rem;">[+${e.elapsed}]</span>
       </div>`
     ).join("");
+
+    // Update undo button state
+    var undoBtn = document.getElementById("btn-undo");
+    if (undoBtn) {
+      // Allow undo as long as there are entries (but not the initial "Code Blue called" event)
+      undoBtn.disabled = eventLog.length <= 1;
+    }
   }
+
+  // ---- Undo Last Entry ----
+  window.undoLastEntry = function () {
+    if (eventLog.length <= 1) return; // never undo the "Code Blue called" event
+    var removed = eventLog.pop();
+    renderLog();
+    showToast("Undone: " + removed.text);
+  };
 
   // ---- Timer Tick ----
   function tick() {
@@ -114,6 +178,7 @@
       compressionAlertActive = true;
       $alertCompression.classList.remove("hidden");
       $alertCompression.classList.add("flashing");
+      playAlertSound("compression");
       addLogEntry("Alert", "Compression switch due");
     }
 
@@ -128,6 +193,7 @@
       epiAlertActive = true;
       $alertEpi.classList.remove("hidden");
       $alertEpi.classList.add("flashing");
+      playAlertSound("epi");
       addLogEntry("Alert", "Epinephrine due");
     }
   }
