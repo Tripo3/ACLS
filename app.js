@@ -208,7 +208,7 @@
   }
 
   // ---- Start / End Code ----
-  $btnStartCode.addEventListener("click", function () {
+  function startCode() {
     if (codeRunning) return;
     codeRunning = true;
     codeStartTime = new Date();
@@ -223,7 +223,12 @@
     $tabContent.classList.remove("hidden");
 
     masterIntervalId = setInterval(tick, 1000);
-  });
+  }
+
+  $btnStartCode.addEventListener("click", startCode);
+
+  // Auto-start on page load
+  startCode();
 
   // ---- End Code → Outcome Overlay ----
   let endCodeWallTime = null;
